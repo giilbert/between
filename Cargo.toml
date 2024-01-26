@@ -10,7 +10,7 @@ axum = "0.7.4"
 color-eyre = "0.6.2"
 eyre = "0.6.11"
 hyper = { version = "1.1.0", features = ["full"] }
-reqwest = "0.11.23"
+reqwest = { version = "0.11.23", features = ["stream"] }
 tokio = { version = "1.35.1", features = ["full"] }
 tower-http = "0.5.1"
 tracing = "0.1.40"

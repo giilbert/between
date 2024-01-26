@@ -61,7 +61,7 @@ impl Proxy {
             );
         }
 
-        *response.body_mut() = Body::from(proxied_response.bytes().await?);
+        *response.body_mut() = Body::from_stream(proxied_response.bytes_stream());
 
         Ok(response)
     }

@@ -28,7 +28,7 @@ async fn main() -> Result<()> {
         .init();
 
     let app = proxy_handler.with_state(AppState(Arc::new(AppStateInner {
-        proxy: Proxy::new(Scheme::HTTP, Authority::from_static("localhost:3000")),
+        proxy: Proxy::new(Scheme::HTTPS, Authority::from_static("localhost:3000")),
     })));
 
     let listener = TcpListener::bind("0.0.0.0:8080").await.unwrap();
