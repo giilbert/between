@@ -1,4 +1,5 @@
 mod cli;
+mod client_assets;
 mod prelude;
 mod proxy;
 mod state;
@@ -9,7 +10,7 @@ use axum::{
     body::Body,
     extract::{Request, State},
     handler::Handler as _,
-    http::uri::{Authority, Scheme},
+    http::uri::Scheme,
 };
 use clap::Parser as _;
 use hyper::Response;
@@ -17,7 +18,6 @@ use tokio::net::TcpListener;
 
 use prelude::*;
 use tracing::level_filters::LevelFilter;
-use tracing_subscriber::filter::Directive;
 
 use crate::{
     cli::CliArgs,

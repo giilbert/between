@@ -1,6 +1,6 @@
 use axum::{
     body::Body,
-    extract::{ws, FromRequest, FromRequestParts, WebSocketUpgrade},
+    extract::{FromRequest, WebSocketUpgrade},
     http::{request::Parts, uri::Scheme},
     RequestExt,
 };
