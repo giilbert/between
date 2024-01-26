@@ -1,3 +1,4 @@
+mod cli;
 mod prelude;
 mod proxy;
 mod state;
@@ -10,12 +11,16 @@ use axum::{
     handler::Handler as _,
     http::uri::{Authority, Scheme},
 };
+use clap::Parser as _;
 use hyper::Response;
 use tokio::net::TcpListener;
 
 use prelude::*;
+use tracing::level_filters::LevelFilter;
+use tracing_subscriber::filter::Directive;
 
 use crate::{
+    cli::CliArgs,
     proxy::Proxy,
     state::{AppState, AppStateInner},
 };
@@ -24,11 +29,25 @@ use crate::{
 async fn main() -> Result<()> {
     // set up tracing with env
     tracing_subscriber::fmt::Subscriber::builder()
-        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::builder()
+                .with_default_directive(LevelFilter::INFO.into())
+                .with_env_var("RUST_LOG")
+                .from_env_lossy(),
+        )
         .init();
 
+    let args = CliArgs::parse();
+
+    let destination_parts = args.destination.clone().into_parts();
+    let scheme = destination_parts.scheme.unwrap_or(Scheme::HTTP);
+    let authority = destination_parts
+        .authority
+        .ok_or_else(|| eyre!("destination must have an authority"))?;
+    info!("Destination: {}://{}", scheme, authority);
+
     let app = proxy_handler.with_state(AppState(Arc::new(AppStateInner {
-        proxy: Proxy::new(Scheme::HTTPS, Authority::from_static("localhost:3000")),
+        proxy: Proxy::new(scheme, authority),
     })));
 
     let listener = TcpListener::bind("0.0.0.0:8080").await.unwrap();

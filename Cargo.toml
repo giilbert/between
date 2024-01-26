@@ -6,12 +6,14 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = "0.7.4"
+axum = { version = "0.7.4", features = ["ws"] }
+clap = { version = "4.4.18", features = ["derive"] }
 color-eyre = "0.6.2"
 eyre = "0.6.11"
 hyper = { version = "1.1.0", features = ["full"] }
 reqwest = { version = "0.11.23", features = ["stream"] }
 tokio = { version = "1.35.1", features = ["full"] }
+tokio-tungstenite = "0.21.0"
 tower-http = "0.5.1"
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }

@@ -31,6 +31,19 @@ impl Proxy {
         state: AppState,
         request: hyper::Request<Body>,
     ) -> Result<axum::response::Response<Body>> {
+        if request
+            .headers()
+            .get(axum::http::header::UPGRADE)
+            .is_some_and(|value| {
+                value
+                    .to_str()
+                    .map(|value| value.to_lowercase() == "websocket")
+                    .unwrap_or(false)
+            })
+        {
+            todo!("handle websockets");
+        }
+
         let proxied_request = self.build_proxied_request(&state, request).await?;
         let proxied_response = self.client.execute(proxied_request).await?;
         self.build_response(proxied_response).await
