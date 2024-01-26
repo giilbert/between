@@ -36,6 +36,7 @@ async fn main() -> Result<()> {
                 .from_env_lossy(),
         )
         .init();
+    color_eyre::install()?;
 
     let args = CliArgs::parse();
 

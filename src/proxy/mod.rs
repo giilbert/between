@@ -1,4 +1,5 @@
 mod simple;
+mod websocket;
 
 use core::fmt::Debug;
 
@@ -41,7 +42,7 @@ impl Proxy {
                     .unwrap_or(false)
             })
         {
-            todo!("handle websockets");
+            return self.handle_websocket(state, request).await;
         }
 
         let proxied_request = self.build_proxied_request(&state, request).await?;
