@@ -1,3 +1,4 @@
+mod app;
 mod cli;
 mod client_assets;
 mod prelude;
@@ -20,6 +21,7 @@ use prelude::*;
 use tracing::level_filters::LevelFilter;
 
 use crate::{
+    app::create_app_router,
     cli::CliArgs,
     proxy::Proxy,
     state::{AppState, AppStateInner},
@@ -47,17 +49,32 @@ async fn main() -> Result<()> {
         .ok_or_else(|| eyre!("destination must have an authority"))?;
     info!("Destination: {}://{}", scheme, authority);
 
-    let app = proxy_handler.with_state(AppState(Arc::new(AppStateInner {
+    let state = AppState(Arc::new(AppStateInner {
         proxy: Proxy::new(scheme, authority),
-    })));
+    }));
 
-    let listener = TcpListener::bind("0.0.0.0:8080").await.unwrap();
-    info!(
-        "Between proxy listening on {}",
-        listener.local_addr().unwrap()
-    );
-    axum::serve(listener, app).await.unwrap();
+    let (proxy_result, app_result) =
+        tokio::join!(listen_proxy(state.clone()), listen_app(state.clone()));
 
+    proxy_result?;
+    app_result?;
+
+    Ok(())
+}
+
+async fn listen_app(state: AppState) -> Result<()> {
+    let router = create_app_router();
+    let listener = TcpListener::bind("0.0.0.0:8081").await?;
+    info!("Between app listening on {}", listener.local_addr()?);
+    axum::serve(listener, router.with_state(state)).await?;
+    Ok(())
+}
+
+async fn listen_proxy(state: AppState) -> Result<()> {
+    let proxy_service = proxy_handler.with_state(state);
+    let listener = TcpListener::bind("0.0.0.0:8080").await?;
+    info!("Between proxy listening on {}", listener.local_addr()?);
+    axum::serve(listener, proxy_service).await?;
     Ok(())
 }
 
