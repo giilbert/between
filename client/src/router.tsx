@@ -1,7 +1,7 @@
 import { createRouter } from "@tanstack/react-router";
 import { ThemeProvider } from "./ui/components/theme-provider";
 import { Outlet, createRootRoute } from "@tanstack/react-router";
-import { indexRoute } from "./dashboard/route";
+import { indexRoute, requestViewRoute } from "./dashboard/route";
 import { Navbar } from "./ui/components/navbar";
 import { ConnectionWrapper } from "./api/components/connection-wrapper";
 
@@ -16,7 +16,7 @@ export const rootRoute = createRootRoute({
   ),
 });
 
-export const routeTree = rootRoute.addChildren([indexRoute]);
+export const routeTree = rootRoute.addChildren([indexRoute, requestViewRoute]);
 
 export const router = createRouter({
   routeTree,
