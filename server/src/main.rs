@@ -18,6 +18,7 @@ use hyper::Response;
 use tokio::net::TcpListener;
 
 use prelude::*;
+use tower_http::cors::CorsLayer;
 use tracing::level_filters::LevelFilter;
 
 use crate::{
@@ -63,10 +64,14 @@ async fn main() -> Result<()> {
 }
 
 async fn listen_app(state: AppState) -> Result<()> {
-    let router = create_app_router();
+    let router = create_app_router(state.clone());
     let listener = TcpListener::bind("0.0.0.0:8081").await?;
     info!("Between app listening on {}", listener.local_addr()?);
-    axum::serve(listener, router.with_state(state)).await?;
+    axum::serve(
+        listener,
+        router.with_state(state).layer(CorsLayer::permissive()),
+    )
+    .await?;
     Ok(())
 }
 

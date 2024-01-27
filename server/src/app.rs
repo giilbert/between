@@ -5,12 +5,21 @@ use axum::{
     Router,
 };
 use hyper::{header, StatusCode, Uri};
+use socketioxide::{extract::SocketRef, SocketIo};
 
-use crate::{client_assets, state::AppState};
+use crate::{client_assets, prelude::*, state::AppState};
 
-pub fn create_app_router() -> Router<AppState> {
+pub fn create_app_router(state: AppState) -> Router<AppState> {
+    let (socket_io_layer, io) = SocketIo::builder().with_state(state).build_layer();
+
+    // Set up socket.io
+    io.ns("/", on_socket_connect);
+
+    // Set up the router
     let api_router = Router::new().route("/", get(|| async { "Hello, World!" }));
-    let mut router = Router::new().nest("/api", api_router);
+    let mut router = Router::new()
+        .nest("/api", api_router)
+        .layer(socket_io_layer);
 
     if client_assets::is_active() {
         router = router.fallback(serve_client_assets);
@@ -51,4 +60,11 @@ async fn serve_client_assets(uri: Uri) -> impl IntoResponse {
                 .unwrap()
         }
     }
+}
+
+async fn on_socket_connect(s: SocketRef) {
+    info!("Socket {} connected", s.id);
+    s.on_disconnect(|s: SocketRef| async move {
+        info!("Socket {} disconnected", s.id);
+    });
 }
